@@ -13,39 +13,67 @@ if (!app) {
 app.innerHTML = `
   <main class="container">
     <section class="generator-card">
-      <div class="header">
-        <div class="logo">🔐</div>
+
+      <header class="header">
+        <div class="logo">
+          🔐
+        </div>
+
         <h1>Password Generator</h1>
-        <p>Create a strong and secure password in seconds.</p>
-      </div>
 
-      <div class="password-container">
-        <input
-          id="password"
-          type="text"
-          value=""
-          readonly
-          placeholder="Your password will appear here"
-        />
-        <button id="copyButton" class="copy-button">
-          Copy
-        </button>
-      </div>
+        <p>
+          Generate strong, secure passwords in seconds.
+        </p>
+      </header>
 
-      <div class="strength-container">
-        <div class="strength-header">
-          <span>Password strength</span>
-          <span id="strengthText">—</span>
+      <section class="password-section">
+        <div class="password-container">
+          <input
+            id="password"
+            type="text"
+            readonly
+            aria-label="Generated password"
+            placeholder="Generate a password"
+          />
+
+          <button
+            id="copyButton"
+            class="copy-button"
+            type="button"
+            aria-label="Copy password"
+          >
+            Copy
+          </button>
         </div>
 
-        <div class="strength-bar">
-          <div id="strengthBar"></div>
-        </div>
-      </div>
+        <div class="strength-container">
+          <div class="strength-header">
+            <span>Password strength</span>
+            <span id="strengthText">—</span>
+          </div>
 
-      <div class="settings">
+          <div
+            class="strength-bar"
+            role="progressbar"
+            aria-label="Password strength"
+          >
+            <div id="strengthBar"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="settings">
+
+        <div class="section-title">
+          <h2>Password settings</h2>
+          <span>Customize your password</span>
+        </div>
+
         <div class="setting-header">
-          <label for="length">Password length</label>
+          <label for="length">
+            Password length
+          </label>
+
           <span id="lengthValue">16</span>
         </div>
 
@@ -55,34 +83,68 @@ app.innerHTML = `
           min="4"
           max="64"
           value="16"
+          aria-label="Password length"
         />
 
-        <label class="checkbox">
-          <input id="lowercase" type="checkbox" checked />
-          <span>Lowercase letters</span>
-        </label>
+        <div class="options">
 
-        <label class="checkbox">
-          <input id="uppercase" type="checkbox" checked />
-          <span>Uppercase letters</span>
-        </label>
+          <label class="checkbox">
+            <input
+              id="lowercase"
+              type="checkbox"
+              checked
+            />
+            <span>Lowercase letters</span>
+          </label>
 
-        <label class="checkbox">
-          <input id="numbers" type="checkbox" checked />
-          <span>Numbers</span>
-        </label>
+          <label class="checkbox">
+            <input
+              id="uppercase"
+              type="checkbox"
+              checked
+            />
+            <span>Uppercase letters</span>
+          </label>
 
-        <label class="checkbox">
-          <input id="symbols" type="checkbox" checked />
-          <span>Symbols</span>
-        </label>
-      </div>
+          <label class="checkbox">
+            <input
+              id="numbers"
+              type="checkbox"
+              checked
+            />
+            <span>Numbers</span>
+          </label>
 
-      <p id="error" class="error"></p>
+          <label class="checkbox">
+            <input
+              id="symbols"
+              type="checkbox"
+              checked
+            />
+            <span>Symbols</span>
+          </label>
 
-      <button id="generateButton" class="generate-button">
+        </div>
+      </section>
+
+      <p
+        id="error"
+        class="error"
+        role="alert"
+      ></p>
+
+      <button
+        id="generateButton"
+        class="generate-button"
+        type="button"
+      >
         Generate Password
       </button>
+
+      <footer class="footer">
+        <span>🔒 Generated locally in your browser</span>
+      </footer>
+
     </section>
   </main>
 `;
