@@ -20,6 +20,10 @@ export function generatePassword(options: PasswordOptions): string {
     symbols,
   } = options;
 
+  if (length < 4 || length > 64) {
+    throw new Error("Password length must be between 4 and 64.");
+  }
+
   let characters = "";
 
   if (lowercase) characters += LOWERCASE;
@@ -27,18 +31,17 @@ export function generatePassword(options: PasswordOptions): string {
   if (numbers) characters += NUMBERS;
   if (symbols) characters += SYMBOLS;
 
-  if (characters.length === 0) {
+  if (!characters) {
     throw new Error("Select at least one character type.");
   }
 
-  if (length < 4 || length > 64) {
-    throw new Error("Password length must be between 4 and 64.");
-  }
+  const randomValues = new Uint32Array(length);
+  crypto.getRandomValues(randomValues);
 
   let password = "";
 
   for (let i = 0; i < length; i++) {
-    const index = Math.floor(Math.random() * characters.length);
+    const index = randomValues[i] % characters.length;
     password += characters[index];
   }
 
