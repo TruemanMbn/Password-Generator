@@ -1,60 +1,207 @@
-import './style.css'
-import heroImg from './assets/hero.png'
-import typescriptLogo from './assets/typescript.svg'
-import viteLogo from './assets/vite.svg'
-import { setupCounter } from './counter.ts'
+import "./style.css";
+import {
+  generatePassword,
+  type PasswordOptions,
+} from "./passwordGenerator";
 
-document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
-<section id="center">
-  <div class="hero">
-    <img src="${heroImg}" class="base" width="170" height="179">
-    <img src="${typescriptLogo}" class="framework" alt="TypeScript logo"/>
-    <img src="${viteLogo}" class="vite" alt="Vite logo" />
-  </div>
-  <div>
-    <h1>Get started</h1>
-    <p>Edit <code>src/main.ts</code> and save to test <code>HMR</code></p>
-  </div>
-  <button id="counter" type="button" class="counter"></button>
-</section>
+const app = document.querySelector<HTMLDivElement>("#app");
 
-<div class="ticks"></div>
+if (!app) {
+  throw new Error("App element not found");
+}
 
-<section id="next-steps">
-  <div id="docs">
-    <svg class="icon" role="presentation" aria-hidden="true"><use href="/icons.svg#documentation-icon"></use></svg>
-    <h2>Documentation</h2>
-    <p>Your questions, answered</p>
-    <ul>
-      <li>
-        <a href="https://vite.dev/" target="_blank">
-          <img class="logo" src="${viteLogo}" alt="" />
-          Explore Vite
-        </a>
-      </li>
-      <li>
-        <a href="https://www.typescriptlang.org" target="_blank">
-          <img class="button-icon" src="${typescriptLogo}" alt="">
-          Learn more
-        </a>
-      </li>
-    </ul>
-  </div>
-  <div id="social">
-    <svg class="icon" role="presentation" aria-hidden="true"><use href="/icons.svg#social-icon"></use></svg>
-    <h2>Connect with us</h2>
-    <p>Join the Vite community</p>
-    <ul>
-      <li><a href="https://github.com/vitejs/vite" target="_blank"><svg class="button-icon" role="presentation" aria-hidden="true"><use href="/icons.svg#github-icon"></use></svg>GitHub</a></li>
-      <li><a href="https://chat.vite.dev/" target="_blank"><svg class="button-icon" role="presentation" aria-hidden="true"><use href="/icons.svg#discord-icon"></use></svg>Discord</a></li>
-      <li><a href="https://x.com/vite_js" target="_blank"><svg class="button-icon" role="presentation" aria-hidden="true"><use href="/icons.svg#x-icon"></use></svg>X.com</a></li>
-      <li><a href="https://bsky.app/profile/vite.dev" target="_blank"><svg class="button-icon" role="presentation" aria-hidden="true"><use href="/icons.svg#bluesky-icon"></use></svg>Bluesky</a></li>
-    </ul>
-  </div>
-</section>
+app.innerHTML = `
+  <main class="container">
+    <section class="generator-card">
+      <div class="header">
+        <div class="logo">🔐</div>
+        <h1>Password Generator</h1>
+        <p>Create a strong and secure password in seconds.</p>
+      </div>
 
-<div class="ticks"></div>
-<section id="spacer"></section>
-`
+      <div class="password-container">
+        <input
+          id="password"
+          type="text"
+          value=""
+          readonly
+          placeholder="Your password will appear here"
+        />
+        <button id="copyButton" class="copy-button">
+          Copy
+        </button>
+      </div>
 
-setupCounter(document.querySelector<HTMLButtonElement>('#counter')!)
+      <div class="strength-container">
+        <div class="strength-header">
+          <span>Password strength</span>
+          <span id="strengthText">—</span>
+        </div>
+
+        <div class="strength-bar">
+          <div id="strengthBar"></div>
+        </div>
+      </div>
+
+      <div class="settings">
+        <div class="setting-header">
+          <label for="length">Password length</label>
+          <span id="lengthValue">16</span>
+        </div>
+
+        <input
+          id="length"
+          type="range"
+          min="4"
+          max="64"
+          value="16"
+        />
+
+        <label class="checkbox">
+          <input id="lowercase" type="checkbox" checked />
+          <span>Lowercase letters</span>
+        </label>
+
+        <label class="checkbox">
+          <input id="uppercase" type="checkbox" checked />
+          <span>Uppercase letters</span>
+        </label>
+
+        <label class="checkbox">
+          <input id="numbers" type="checkbox" checked />
+          <span>Numbers</span>
+        </label>
+
+        <label class="checkbox">
+          <input id="symbols" type="checkbox" checked />
+          <span>Symbols</span>
+        </label>
+      </div>
+
+      <p id="error" class="error"></p>
+
+      <button id="generateButton" class="generate-button">
+        Generate Password
+      </button>
+    </section>
+  </main>
+`;
+
+const passwordInput =
+  document.querySelector<HTMLInputElement>("#password")!;
+
+const copyButton =
+  document.querySelector<HTMLButtonElement>("#copyButton")!;
+
+const generateButton =
+  document.querySelector<HTMLButtonElement>("#generateButton")!;
+
+const lengthInput =
+  document.querySelector<HTMLInputElement>("#length")!;
+
+const lengthValue =
+  document.querySelector<HTMLSpanElement>("#lengthValue")!;
+
+const strengthText =
+  document.querySelector<HTMLSpanElement>("#strengthText")!;
+
+const strengthBar =
+  document.querySelector<HTMLDivElement>("#strengthBar")!;
+
+const errorElement =
+  document.querySelector<HTMLParagraphElement>("#error")!;
+
+const checkboxes = {
+  lowercase: document.querySelector<HTMLInputElement>("#lowercase")!,
+  uppercase: document.querySelector<HTMLInputElement>("#uppercase")!,
+  numbers: document.querySelector<HTMLInputElement>("#numbers")!,
+  symbols: document.querySelector<HTMLInputElement>("#symbols")!,
+};
+
+function getOptions(): PasswordOptions {
+  return {
+    length: Number(lengthInput.value),
+    lowercase: checkboxes.lowercase.checked,
+    uppercase: checkboxes.uppercase.checked,
+    numbers: checkboxes.numbers.checked,
+    symbols: checkboxes.symbols.checked,
+  };
+}
+
+function calculateStrength(options: PasswordOptions): string {
+  let score = 0;
+
+  if (options.length >= 8) score++;
+  if (options.length >= 12) score++;
+  if (options.length >= 16) score++;
+
+  if (options.lowercase) score++;
+  if (options.uppercase) score++;
+  if (options.numbers) score++;
+  if (options.symbols) score++;
+
+  if (score <= 3) return "Weak";
+  if (score <= 5) return "Medium";
+  return "Strong";
+}
+
+function updateStrength(options: PasswordOptions): void {
+  const strength = calculateStrength(options);
+
+  strengthText.textContent = strength;
+
+  strengthBar.className = "";
+
+  if (strength === "Weak") {
+    strengthBar.classList.add("weak");
+  } else if (strength === "Medium") {
+    strengthBar.classList.add("medium");
+  } else {
+    strengthBar.classList.add("strong");
+  }
+}
+
+function generate(): void {
+  try {
+    const options = getOptions();
+
+    const password = generatePassword(options);
+
+    passwordInput.value = password;
+    errorElement.textContent = "";
+
+    updateStrength(options);
+  } catch (error) {
+    errorElement.textContent =
+      error instanceof Error
+        ? error.message
+        : "Something went wrong.";
+  }
+}
+
+lengthInput.addEventListener("input", () => {
+  lengthValue.textContent = lengthInput.value;
+  updateStrength(getOptions());
+});
+
+Object.values(checkboxes).forEach((checkbox) => {
+  checkbox.addEventListener("change", () => {
+    updateStrength(getOptions());
+  });
+});
+
+generateButton.addEventListener("click", generate);
+
+copyButton.addEventListener("click", async () => {
+  if (!passwordInput.value) return;
+
+  await navigator.clipboard.writeText(passwordInput.value);
+
+  copyButton.textContent = "Copied!";
+
+  setTimeout(() => {
+    copyButton.textContent = "Copy";
+  }, 1500);
+});
+
+generate();
