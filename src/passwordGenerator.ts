@@ -11,6 +11,30 @@ export interface PasswordOptions {
   symbols: boolean;
 }
 
+function getRandomIndex(max: number): number {
+  const randomValues = new Uint32Array(1);
+  crypto.getRandomValues(randomValues);
+
+  return randomValues[0] % max;
+}
+
+function getRandomCharacter(characters: string): string {
+  return characters[getRandomIndex(characters.length)];
+}
+
+function shuffle(characters: string[]): string[] {
+  for (let i = characters.length - 1; i > 0; i--) {
+    const j = getRandomIndex(i + 1);
+
+    [characters[i], characters[j]] = [
+      characters[j],
+      characters[i],
+    ];
+  }
+
+  return characters;
+}
+
 export function generatePassword(options: PasswordOptions): string {
   const {
     length,
@@ -21,29 +45,49 @@ export function generatePassword(options: PasswordOptions): string {
   } = options;
 
   if (length < 4 || length > 64) {
-    throw new Error("Password length must be between 4 and 64.");
+    throw new Error(
+      "Password length must be between 4 and 64.",
+    );
   }
 
-  let characters = "";
+  const characterSets: string[] = [];
 
-  if (lowercase) characters += LOWERCASE;
-  if (uppercase) characters += UPPERCASE;
-  if (numbers) characters += NUMBERS;
-  if (symbols) characters += SYMBOLS;
+  if (lowercase) characterSets.push(LOWERCASE);
+  if (uppercase) characterSets.push(UPPERCASE);
+  if (numbers) characterSets.push(NUMBERS);
+  if (symbols) characterSets.push(SYMBOLS);
 
-  if (!characters) {
-    throw new Error("Select at least one character type.");
+  if (characterSets.length === 0) {
+    throw new Error(
+      "Select at least one character type.",
+    );
   }
 
-  const randomValues = new Uint32Array(length);
-  crypto.getRandomValues(randomValues);
-
-  let password = "";
-
-  for (let i = 0; i < length; i++) {
-    const index = randomValues[i] % characters.length;
-    password += characters[index];
+  if (length < characterSets.length) {
+    throw new Error(
+      `Password length must be at least ${characterSets.length} when all selected character types are enabled.`,
+    );
   }
 
-  return password;
+  const allCharacters = characterSets.join("");
+  const passwordCharacters: string[] = [];
+
+  // Guarantee at least one character
+  // from every selected character set.
+  for (const characterSet of characterSets) {
+    passwordCharacters.push(
+      getRandomCharacter(characterSet),
+    );
+  }
+
+  // Fill the remaining positions.
+  while (passwordCharacters.length < length) {
+    passwordCharacters.push(
+      getRandomCharacter(allCharacters),
+    );
+  }
+
+  // Shuffle so the guaranteed characters
+  // aren't always at the beginning.
+  return shuffle(passwordCharacters).join("");
 }
