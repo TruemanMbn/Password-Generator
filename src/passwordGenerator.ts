@@ -80,7 +80,7 @@ export function generatePassword(options: PasswordOptions): string {
     );
   }
 
-  // Fill the remaining positions.
+  // fill the remaining positions.
   while (passwordCharacters.length < length) {
     passwordCharacters.push(
       getRandomCharacter(allCharacters),
